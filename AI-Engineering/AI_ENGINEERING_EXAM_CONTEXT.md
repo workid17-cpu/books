@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Ch_01 | Introduction to Building AI Applications with Foundation Models | COMPLETE | `chapter_01/` |
 | Ch_02 | Understanding Foundation Models | COMPLETE | `chapter_02/` |
-| Ch_03 | Evaluation Methodology | PENDING | — |
+| Ch_03 | Evaluation Methodology | COMPLETE | `chapter_03/` |
 | Ch_04 | Evaluate AI Systems | PENDING | — |
 | Ch_05 | Prompt Engineering | PENDING | — |
 | Ch_06 | RAG and Agents | PENDING | — |
@@ -21,7 +21,7 @@
 | Ch_09 | Inference Optimization | PENDING | — |
 | Ch_10 | AI Engineering Architecture | PENDING | — |
 
-**Ch_01 and Ch_02 complete; Ch_03–Ch_10 pending. Do not look ahead to unprocessed chapters while working (hard rule).**
+**Ch_01–Ch_03 complete; Ch_04–Ch_10 pending. Do not look ahead to unprocessed chapters while working (hard rule).**
 
 ---
 
@@ -33,7 +33,7 @@ Download URL pattern: `https://drive.google.com/uc?export=download&id=<ID>`
 |---|---|---|---|
 | Ch_01 | `16caYbtziT2q769TpAdtH2D0xkgqk4ATB` | `/tmp/opencode/aie_ch01.pdf` (48 pp) | `/tmp/opencode/aie_ch01.txt` (1736 lines) |
 | Ch_02 | `120lYlxKCnZ88_wM7cpOzkPGKhGSnbltO` | `/tmp/opencode/aie_ch02.pdf` | `/tmp/opencode/aie_ch02.txt` (2478 lines) |
-| Ch_03 | `1KyGH1quBm0U3F6JmEhkh7BQOal7JyoSG` | — | — |
+| Ch_03 | `1KyGH1quBm0U3F6JmEhkh7BQOal7JyoSG` | `/tmp/opencode/aie_ch03.pdf` (48 pp) | `/tmp/opencode/aie_ch03.txt` (1726 lines) |
 | Ch_04 | `1oYQQgTnKpUKXlOc8SZiHVoltyZJBBVBV` | — | — |
 | Ch_05 | `1gGDmbS4D0-4D1NG03LsQ5bg_TM-s6SqY` | — | — |
 | Ch_06 | `1zVTP7zPdHEEstvfWqo5evpZqIkFsYNGv` | — | — |
@@ -91,10 +91,19 @@ Training data: Common Crawl (nonprofit, ~2–3B pages/mo 2022–23), C4 (Google'
 
 ---
 
-## Repository & Push Setup
+## Chapter 3 Notes (processed)
+
+- **Processed:** 2026-08-13. Source: `1KyGH1quBm0U3F6JmEhkh7BQOal7JyoSG` → `/tmp/opencode/aie_ch03.pdf` (48 pages, 2,232,403 bytes, `%PDF-1.6`, text-extractable) → `/tmp/opencode/aie_ch03.txt` (1726 lines), read in full in 7 read-ops of 200 lines each.
+- **Bundle:** `chapter_03/study_notes.md` (65,248 B), `line_by_line.md` (239 numbered quote items), `flashcards_qna.md` (123 items = Part1 53 / Part2 30 / Part3 40, verified via awk + python), `practice_exam.md` (40 MCQ + 15 T/F + 10 short + 5 essay). MCQ key verified = exact 10/10/10/10 via python (rebalanced by reordering options on Q3, Q6, Q8, Q11, Q13, Q14, Q18, Q22, Q29 — correct answers unchanged); T/F = 8 T / 7 F.
+- **Status:** Pushed to `workid17-cpu/books` on branch `main` (commit `e7293fd`, after `cdc0320`); remote `main` SHA verified via `git ls-remote origin main` = `e7293fd52648ed91d806d1a68f6f28fe5402ef62` (matches local).
+
+### Ch 3 key content (for bundle generation)
+Challenges of evaluating FMs (open-ended, no exhaustive ground truths; evaluating more frequent than training; costs); evaluation goals (to improve or to release, different metrics/effort). Language modeling metrics: entropy H(P) = −ΣP(x)log₂P(x) (2 tokens→1 bit, 4 tokens→2 bits; uncertainty of next token); cross entropy H(P,Q) = −ΣP(x)log₂Q(x) = H(P) + D_KL(P‖Q), NOT symmetric; chain rule → entropy of a sequence = Σ entropy of each token given prior; BPC (bits per char) = bits/token ÷ chars/token; BPB (bits per byte) = BPC ÷ (bits/char ÷ 8); byte-pair vs char. Perplexity = 2^H or e^H (2-bit CE → PPL 4); "a uniform model has PPL = vocab size"; TF/PyTorch report nats (use e^H), OpenAI reports bits (2^H); PPL interpretation: structure→lower, vocab→higher, context→lower; post-training caveat (PPL rises after SFT/RLHF, less predictive of quality); used for contamination/dedup/anomaly detection. Exact evaluation: benchmarks HumanEval/MBPP (Python code), Spider/BIRD-SQL/WikiSQL (SQL), GSM8K/MATH (math), MMLU/HELM/HellaSwag (general); fine-grained (pass@k; 5/10 samples k=3 → 50%) vs coarse; exact match "contains" trap (September 12, 1929 contains 1929); deterministic vs non-deterministic; few-shot adds noise. Similarity: edit distance (Levenshtein; deletion/insertion/substitution ops; "bad"→"bard" = 1, "bad"→"cash" = 3); exact-match/semantic → ROUGE/BLEU/METEOR/SPICE (n-gram overlap; ROUGE-N precision/recall, ROUGE-L LCS) vs F1-based (character/word F1, QA Squad), cosine similarity (1 = identical, −1 = opposite, 0 = perpendicular), BERTScore (contextual embeddings) / MoverScore (Word Mover's Distance). Embeddings: vector repr; sizes BERT base 768 / BERT large 1024, CLIP 512, text-embedding-3-small 1536 / text-embedding-3-large 3072, Cohere embed-v3 1024 / embed-light-v4 384; MTEB benchmark. Multi-modal: CLIP (text+image), ULIP (3D), ImageBind (6 modalities). Functional correctness: executes code, has definitive answers; vs semantics. AI as a judge: 58% of LangChain evals; MT-Bench judge-model agreement GPT-4 with humans 85% > human–human 81%; AlpacaEval length-corrected win rate 0.98 correlation (fast but unstable w/ strong models); consistency issue — GPT-4 self-consistency 65% → 77.5% with quadrupled cost (4× sampling); biases: self-bias (GPT-4 +10% self, Claude-v1 +25% self), first-position bias (vs human recency), verbosity bias (Wu and Aji 2023; Saito et al. 2023), charm; judge model failures (Refuel); specialized judges: Cappy 360M (pros/cons), BLEURT (score range ~−2.5 to 1.0), Prometheus (1–5 Likert scale, reference needed), PandaLM, JudgeLM, LLM-A*; LLM-as-judge framework breakdown (collect feedback → create evaluation criteria → evaluate with judge model). Comparative evaluation: first used by Anthropic (2021) for Claude; ask 2 responses "which is better" (single/batch, margin); problems with Elo → Bradley–Terry (Elo sensitive to order of evaluators & prompts; BT accounts for pairwise comparisons, no order assumption); Chatbot Arena scales ×400 → +1000; Llama-13b = 800; 57 models / 244,000 comparisons / 1,596 pairs / ~153 per pair; LMSYS dataset 33,000 prompts: 180 "hello"/"hi" (0.55%), "X has 3 sisters" asked 44 times. Comparative evaluation limitations: scalability (n models → n(n−1)/2 pairs), transitivity (A>B, B>C, but A vs C?), standardization/quality control (inconsistency among judges, human 81%), comparative-to-absolute gap; long-term: 3 scenarios (fine-tuning to reduce cost, comparative signals + few-shot → absolute, human + model cascade); why comparative evaluation has strong future.
+
+---
 
 - **Remote repo:** `https://github.com/workid17-cpu/books.git` (private; branch `main`).
-- **Staging repo:** `/tmp/opencode/books-push` — used for ALL commits/pushes (`.git` origin points to the repo). Latest commit on `main` before Ch_01 push: `29ac2be`.
+- **Staging repo:** `/tmp/opencode/books-push` — used for ALL commits/pushes (`.git` origin points to the repo). Latest commit on `main` after Ch_03 push: `e7293fd`.
 - **Local `/workspace/.git`:** no remotes; NOT used for pushes.
 - **Push workflow:**
   1. Copy new/updated bundle folder(s) into `/tmp/opencode/books-push/AI-Engineering/`.
@@ -110,19 +119,19 @@ Training data: Common Crawl (nonprofit, ~2–3B pages/mo 2022–23), C4 (Google'
 
 - **Session 1 (2026-08-13):** Created `/workspace/AI-Engineering/` project. Downloaded Ch 1 PDF (ID `16caYbtziT2q769TpAdtH2D0xkgqk4ATB`; `%PDF-1.6`, 48 pages), extracted text (1736 lines), read in full. Generated complete Ch 1 bundle (study_notes 327 lines / line_by_line 432 lines / flashcards 123 items / practice_exam with MCQ key verified 10/10/10/10, T/F 8T/7F). Created this context file. Pushed `chapter_01/` to `workid17-cpu/books` (branch `main`), remote verified.
 - **Session 2 (2026-08-13):** Downloaded Ch 2 PDF (ID `120lYlxKCnZ88_wM7cpOzkPGKhGSnbltO`), extracted text (2478 lines), read in full. Generated complete Ch 2 bundle (`chapter_02/`): study_notes 412 lines, line_by_line 675 lines (154 items), flashcards 123 items (Part1 53 / Part2 30 / Part3 40), practice_exam 414 lines (MCQ key verified 10/10/10/10, T/F 8T/7F). Updated this context file (Progress Matrix, Ch_02 Notes, Session Log, Resume Instructions). Pushed `chapter_02/` to `workid17-cpu/books` (branch `main`) as commit `3888a2b`; remote verified via `git ls-remote` SHA match. (Note: `gh api`/GH_TOKEN unavailable this session; `git push` success + remote ref SHA confirmed instead.)
+- **Session 3 (2026-08-13):** Downloaded Ch 3 PDF (ID `1KyGH1quBm0U3F6JmEhkh7BQOal7JyoSG`; 48 pp, 2,232,403 B), extracted text (1726 lines), read in full. Generated complete Ch 3 bundle (`chapter_03/`): study_notes, line_by_line 239 items, flashcards 123 items (Part1 53 / Part2 30 / Part3 40), practice_exam (40 MCQ + 15 T/F + 10 short + 5 essay). Rebalanced MCQ key to exact 10/10/10/10 by reordering options on Q3/Q6/Q8/Q11/Q13/Q14/Q18/Q22/Q29 (correct answers unchanged); T/F 8T/7F. Updated this context file (Progress Matrix, Ch_03 Notes, Session Log, Resume Instructions). Pushed `chapter_03/` to `workid17-cpu/books` (branch `main`) as commit `e7293fd`; remote verified via `git ls-remote origin main` SHA match.
 
 ---
 
 ## Resume Instructions
 
-Next action: **process Chapter 3 (Evaluation Methodology, ID `1KyGH1quBm0U3F6JmEhkh7BQOal7JyoSG`)**
+Next action: **process Chapter 4 (Evaluate AI Systems, ID `1oYQQgTnKpUKXlOc8SZiHVoltyZJBBVBV`)**
 
-1. Download: `curl -L -o /tmp/opencode/aie_ch03.pdf 'https://drive.google.com/uc?export=download&id=1KyGH1quBm0U3F6JmEhkh7BQOal7JyoSG'`; check `%PDF-` header; `pdftotext` → `/tmp/opencode/aie_ch03.txt`; read full text.
-2. Create `chapter_03/`, write the 4 bundle files per conventions.
-3. Verify MCQ key = 10/10/10/10 and T/F count; adjust if needed.
-4. Update this context file (Progress Matrix, Ch_03 Notes, Session Log).
-5. Copy to `/tmp/opencode/books-push/AI-Engineering/`, commit, push `main`, verify via `gh api`.
-6. Report; offer next chapter.
+1. Download: `curl -L -o /tmp/opencode/aie_ch04.pdf 'https://drive.google.com/uc?export=download&id=1oYQQgTnKpUKXlOc8SZiHVoltyZJBBVBV'`; check `%PDF-` header; `pdftotext` → `/tmp/opencode/aie_ch04.txt`; read full text.
+2. Create `chapter_04/`, write the 4 bundle files per conventions.
+3. Verify MCQ key = 10/10/10/10 and T/F count; adjust if needed (reorder options, never change correct answers).
+4. Update this context file (Progress Matrix, Ch_04 Notes, Session Log).
+5. Copy to `/tmp/opencode/books-push/AI-Engineering/`, commit, push `main`, verify via `git ls-remote origin main` SHA match (note: `gh api`/GH_TOKEN have been unavailable in recent sessions).
 
 ## Commands to Continue
 
